@@ -226,7 +226,9 @@ def dashboard(u=Depends(current), db=Depends(get_db)):
     for lv in (1, 2, 3, 4):
         ids = {s.id for s in streams if s.level == lv}
         levels.append({"level": lv, "streams": len(ids), "students": sum(1 for st in students if st.stream_id in ids)})
-    return {"teachers": db.query(Teacher).count(), "students": len(students),
+    att = {"Present": 0, "Absent": 0, "Late": 0}
+    for a in db.query(Attendance).filter(Attendance.date == dt.date.today()): att[a.status] = att.get(a.status, 0) + 1
+    return {"attendance_today": att, "teachers": db.query(Teacher).count(), "students": len(students),
             "staff": db.query(User).filter(User.role == "staff").count(), "streams": len(streams), "levels": levels}
 
 # ---------- exams: marks, results, analytics ----------
